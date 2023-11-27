@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
-from thresholding_model_class import ThresholdingModel
+from thresholding_model_class import ThresholdingModel, GroundTruthMeasurement
 from trained_model import pre_trained_model
 from cloudinary import config, uploader
 from cloudinary.uploader import upload
@@ -21,6 +21,9 @@ config(
     api_key=os.getenv('API_KEY'),
     api_secret=os.getenv('API_SECRET')
 )
+
+loaded_tm = ThresholdingModel()
+
 
 @app.route('/')
 def home():
