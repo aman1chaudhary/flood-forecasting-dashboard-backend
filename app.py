@@ -1,18 +1,19 @@
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
-from models import flood_forecasting_model
+from trained_model import pre_trained_model
 from cloudinary import config, uploader
 from cloudinary.uploader import upload
 import os
 import rasterio
 from rasterio import Affine, MemoryFile
 from dotenv import load_dotenv
+from thresholding_model_class import ThresholdingModel
+
 
 load_dotenv()
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS if needed
-
 
 config(
     cloud_name=os.getenv('CLOUD_NAME'),
@@ -25,17 +26,18 @@ def home():
     return "Hello, this is the Flask backend"
 
 
-    
 
 
 @app.route('/send_measurement', methods=['POST'])
 def receive_measurement():
     data = request.get_json()
     measurement = data.get('measurement')
-    try:
-        predicted_result=flood_forecasting_model(measurement)
 
-        with rasterio.open("June_Sep_2001_2012_binary/Inundation Boundary (01AUG2012 00 00 00 Value_0).tif") as src:
+    try:
+        # predicted_result=flood_forecasting_model(measurement)
+        predicted_result=pre_trained_model(measurement)
+
+        with rasterio.open("sample_tif.tif") as src:
             transform = src.transform
             width = src.width
             height = src.height
@@ -67,6 +69,9 @@ def receive_measurement():
         return jsonify(response)    
     except Exception as e:
         return jsonify({"message":"An error occurred",})
+
+
+
 
 
 if __name__ == '__main__':
