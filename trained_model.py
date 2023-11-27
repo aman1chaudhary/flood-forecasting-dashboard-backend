@@ -1,5 +1,4 @@
 import pickle
-import dataclasses
 import numpy as np
 from typing import Optional, Sequence, Tuple
 from thresholding_model_class import ThresholdingModel
@@ -16,3 +15,5 @@ def pre_trained_model(input_gauge):
 
 
 
+# result=pre_trained_model(12)
+# print(result)

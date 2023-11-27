@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
+from thresholding_model_class import ThresholdingModel
 from trained_model import pre_trained_model
 from cloudinary import config, uploader
 from cloudinary.uploader import upload
@@ -7,7 +8,7 @@ import os
 import rasterio
 from rasterio import Affine, MemoryFile
 from dotenv import load_dotenv
-from thresholding_model_class import ThresholdingModel
+
 
 
 load_dotenv()
@@ -26,49 +27,47 @@ def home():
     return "Hello, this is the Flask backend"
 
 
-
-
 @app.route('/send_measurement', methods=['POST'])
 def receive_measurement():
     data = request.get_json()
     measurement = data.get('measurement')
 
-    try:
+    # try:
         # predicted_result=flood_forecasting_model(measurement)
-        predicted_result=pre_trained_model(measurement)
+    predicted_result=pre_trained_model(measurement)
 
-        with rasterio.open("sample_tif.tif") as src:
-            transform = src.transform
-            width = src.width
-            height = src.height
+    with rasterio.open("sample_tif.tif") as src:
+        transform = src.transform
+        width = src.width
+        height = src.height
 
-        # Create a new in-memory GeoTIFF file for the prediction
-        with MemoryFile() as memfile:
-            with memfile.open(
-                driver="GTiff",
-                width=width,
-                height=height,
-                count=1,  # Number of bands
-                dtype='uint8',
-                crs=src.crs,
-                #crs="EPSG:4326",
-                transform=transform,
-            ) as dst:
-                # Write the predicted result to the GeoTIFF
-                dst.write(predicted_result, 1)
+    # Create a new in-memory GeoTIFF file for the prediction
+    with MemoryFile() as memfile:
+        with memfile.open(
+            driver="GTiff",
+            width=width,
+            height=height,
+            count=1,  # Number of bands
+            dtype='uint8',
+            crs=src.crs,
+            #crs="EPSG:4326",
+            transform=transform,
+        ) as dst:
+            # Write the predicted result to the GeoTIFF
+            dst.write(predicted_result, 1)
 
-            uploaded_file = upload(memfile, resource_type="raw", format="tif", public_id="predicted_inundation_map")
-            file_link = uploaded_file["secure_url"]
-            # print(file_link)
-            
-        response = {
-            "message": "Model Run successfully",
-            "file_link": file_link,
-        }
+        uploaded_file = upload(memfile, resource_type="raw", format="tif", public_id="predicted_inundation_map")
+        file_link = uploaded_file["secure_url"]
+        # print(file_link)
         
-        return jsonify(response)    
-    except Exception as e:
-        return jsonify({"message":"An error occurred",})
+    response = {
+        "message": "Model Run successfully",
+        "file_link": file_link,
+    }
+    
+    return jsonify(response)    
+    # except Exception as e:
+    #     return jsonify({"message":"An error occurred",})
 
 
 
