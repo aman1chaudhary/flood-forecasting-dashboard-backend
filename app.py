@@ -22,7 +22,6 @@ config(
     api_secret=os.getenv('API_SECRET')
 )
 
-loaded_tm = ThresholdingModel()
 
 
 @app.route('/')
